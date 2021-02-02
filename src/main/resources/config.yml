@@ -1,0 +1,12 @@
+database:
+  host: ""
+  db: ""
+  user: ""
+  pass: ""
+
+features:
+  tab: true
+  motd: true
+
+motd: []
+debug: false
