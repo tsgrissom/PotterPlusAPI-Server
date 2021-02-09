@@ -8,7 +8,7 @@ import io.github.potterplus.api.server.PotterPlusAPI;
 public class PotterPlusDBController extends DatabaseController {
 
     @NonNull @Getter
-    private PotterPlusAPI api;
+    private final PotterPlusAPI api;
 
     public PotterPlusDBController(PotterPlusAPI api) {
         super(api.getConfig().getString("database.host"), api.getConfig().getString("database.db"), api.getConfig().getString("database.user"), api.getConfig().getString("database.pass"));

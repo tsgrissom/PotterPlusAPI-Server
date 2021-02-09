@@ -1,5 +1,6 @@
 package io.github.potterplus.api.server.player;
 
+import io.github.potterplus.api.misc.PluginLogger;
 import io.github.potterplus.api.server.PotterPlusAPI;
 import io.github.potterplus.api.server.storage.PotterPlusDBController;
 import lombok.Getter;
@@ -10,6 +11,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 
+import java.net.InetSocketAddress;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -193,6 +195,15 @@ public class PotterPlayer {
     }
 
     public String getIpAddress() {
+        if (isOnline()) {
+            Player p = getPlayer();
+            InetSocketAddress addr = p.getAddress();
+
+            if (addr != null) {
+                return addr.getHostName();
+            }
+        }
+
         try {
             PreparedStatement stmt = getConnection()
                     .prepareStatement("SELECT ip FROM pp_users WHERE uuid=?;");
@@ -258,5 +269,32 @@ public class PotterPlayer {
 
     public User getLPUser() {
         return api.getLuckPerms().getUserManager().getUser(getOfflinePlayer().getUniqueId());
+    }
+
+    private void updateQuitTime() throws SQLException {
+        PreparedStatement stmt = getConnection()
+                .prepareStatement("UPDATE pp_logins SET quit_time=? WHERE uuid=? AND locked=false;");
+        stmt.setLong(1, System.currentTimeMillis());
+        stmt.setString(2, getUniqueStr());
+        stmt.executeUpdate();
+        api.debug("Updated quit time for session of '" + getName() + "'");
+    }
+
+    private void lockSession() throws SQLException {
+        PreparedStatement stmt = getConnection()
+                .prepareStatement("UPDATE pp_logins SET locked=true WHERE uuid=? AND locked=false;");
+        stmt.setString(1, getUniqueStr());
+        stmt.executeUpdate();
+        api.debug("Locked session for user '" + getName() + "'");
+    }
+
+    public void closeSession() {
+        try {
+            updateQuitTime();
+            lockSession();
+        } catch (SQLException e) {
+            PluginLogger.atSevere("Failed to close session for user '" + getName() + "'");
+            e.printStackTrace();
+        }
     }
 }

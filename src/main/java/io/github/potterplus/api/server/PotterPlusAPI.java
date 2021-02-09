@@ -35,6 +35,11 @@ import org.bukkit.plugin.java.annotation.permission.Permissions;
 import org.bukkit.plugin.java.annotation.plugin.*;
 import org.bukkit.plugin.java.annotation.plugin.author.Author;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import static io.github.potterplus.api.misc.PluginLogger.atSevere;
+
 @Plugin(
         name = "PotterPlusAPI",
         version = "1.0.6"
@@ -146,6 +151,23 @@ public class PotterPlusAPI extends JavaPlugin {
         return new PotterPlayer(player, this);
     }
 
+    private void closeSessions() {
+        debug("Updating and locking any remaining sessions");
+
+        try {
+            PreparedStatement updateQuitTimes = getDatabase().getConnection()
+                    .prepareStatement("UPDATE pp_logins SET quit_time=? WHERE locked=false;");
+            updateQuitTimes.setLong(1, System.currentTimeMillis());
+            PreparedStatement lock = getDatabase().getConnection()
+                    .prepareStatement("UPDATE pp_logins SET locked=true WHERE locked=false;");
+            updateQuitTimes.executeUpdate();
+            lock.executeUpdate();
+        } catch (SQLException e) {
+            atSevere("Failed to update and lock remaining sessions!");
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void onEnable() {
         this.plugin = this;
@@ -169,6 +191,8 @@ public class PotterPlusAPI extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        closeSessions();
+
         database.disconnect();
 
         HandlerList.unregisterAll(this);

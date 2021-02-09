@@ -67,7 +67,7 @@ public class WhoIsCommand extends CommandBase<PotterPlusAPI> {
             try {
                 set.addAll(getPlugin().getPlayerManager().getAllUsernames());
             } catch (SQLException e) {
-                context.sendMessage("&cSorry, you had &4potterplus.admin &cbut we couldn't retrieve the list of players!");
+                getPlugin().debug("Failed to complete tab for command /whois");
                 e.printStackTrace();
             }
         }

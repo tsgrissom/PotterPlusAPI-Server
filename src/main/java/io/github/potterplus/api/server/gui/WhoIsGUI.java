@@ -20,9 +20,13 @@ public class WhoIsGUI extends UserInterface {
     }
 
     public WhoIsGUI(PotterPlayer target, PotterPlayer dispatcher, boolean forceUserView) {
-        super("&8Who is &e" + target.getName() + "&8?", forceUserView || !dispatcher.isStaff() ? 18 : 36);
+        super("&8Who is &e" + target.getName() + "&8?", 18);
 
         boolean staff = dispatcher.isStaff();
+
+        if (staff && forceUserView) staff = false;
+
+        this.setSize(staff ? 36 : 18);
 
         List<String> lore = new ArrayList<>();
 
@@ -112,6 +116,7 @@ public class WhoIsGUI extends UserInterface {
 
             loginHistory.setListener((e -> {
                 e.setCancelled(true);
+                e.getWhoClicked().closeInventory();
                 if (e.getWhoClicked() instanceof Player) {
                     ((Player) e.getWhoClicked()).performCommand("loginhistory " + target.getName());
                 }

@@ -1,23 +1,19 @@
 package io.github.potterplus.api.server.command;
 
+import io.github.potterplus.api.PotterPlusServer;
 import io.github.potterplus.api.command.CommandBase;
 import io.github.potterplus.api.command.CommandContext;
 import io.github.potterplus.api.misc.TimeUtilities;
 import io.github.potterplus.api.server.PotterPlusAPI;
+import io.github.potterplus.api.server.player.PotterPlayer;
+import io.github.potterplus.api.string.HoverMessage;
 import lombok.NonNull;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
-import org.bukkit.entity.Player;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
-
-import static io.github.potterplus.api.string.StringUtilities.color;
+import java.util.*;
 
 public class LoginHistoryCommand extends CommandBase<PotterPlusAPI> {
 
@@ -43,38 +39,60 @@ public class LoginHistoryCommand extends CommandBase<PotterPlusAPI> {
         if (args.length == 0) {
             context.sendMessage(" &4&lX &cUsage&8: &c/" + context.getLabel() + " <player>");
         } else {
-            Optional<Player> player = context.resolveTarget();
+            String arg1 = args[0];
+            PotterPlayer pp = PotterPlayer.of(arg1, getPlugin());
 
-            if (player.isPresent()) {
-                Player p = player.get();
+            if (pp != null) {
                 Connection con = api.getDatabase().getConnection();
 
                 try {
                     PreparedStatement stmt = con.prepareStatement("SELECT * FROM pp_logins WHERE uuid=?");
 
-                    stmt.setString(1, p.getUniqueId().toString());
+                    stmt.setString(1, pp.getUniqueStr());
 
                     getPlugin().debug("Getting login history for player '" + context.getSenderName() + "'");
 
                     ResultSet rs = stmt.executeQuery();
 
+                    context.sendMessage(" &6&lOLDEST");
+
                     while (rs.next()) {
-                        String ip = rs.getString("ip");
+                        String fromIp = rs.getString("from_ip");
                         String uuid = rs.getString("uuid");
-                        long time = rs.getLong("time");
                         String result = rs.getString("result");
+                        long joinTime = rs.getLong("join_time");
+                        long quitTime = rs.getLong("quit_time");
+                        boolean locked = rs.getBoolean("locked");
+                        Date joinDate = new Date(joinTime);
+                        Date quitDate = new Date(quitTime);
 
-                        String ipColored = color("&7Address&8: &e" + ip + "\n");
-                        String uuidColored = color("&7UUID&8: &e" + uuid + "\n");
-                        String resultColored = color("&7Result&8: &e" + result);
-                        String timeColored = color("&e" + TimeUtilities.prettyTime(time));
+                        HoverMessage hm = HoverMessage
+                                .compose("&7> &7Login &e" + TimeUtilities.prettyTime(joinTime) + " &7(&3" + TimeUtilities.format(joinTime) + "&7)");
 
-                        TextComponent msg = new TextComponent(color("&6> &7Login at &e" + timeColored));
+                        hm.withHover("&7From IP&8: &e" + fromIp);
+                        hm.withHover("&7UUID&8: &e" + uuid);
+                        hm.withHover("&7Result&8: &e" + result);
+                        hm.withHover("&8&m----------------------------------------");
 
-                        msg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(ipColored), new Text(uuidColored), new Text(resultColored)));
+                        if (!locked && pp.isOnline()) {
+                            hm.withHover("&a&lActive session");
+                        } else {
+                            hm.withHover("&3Timings");
+                            hm.withHover("&7Join time&8:");
+                            hm.withHover(" &e" + TimeUtilities.prettyTime(joinTime) + " &7(&3" + TimeUtilities.format(joinTime) + "&7)");
+                            hm.withHover("&7Quit time&8:");
 
-                        context.getPlayer().spigot().sendMessage(msg);
+                            String quitTimeStr = quitTime == 0 ? " &cUndefined" : " &e" + TimeUtilities.prettyTime(quitTime) + " &7(&3" + TimeUtilities.format(quitTime) + "&7)";
+
+                            hm.withHover(quitTimeStr);
+                            hm.withHover("&7Session length&8:");
+                            hm.withHover(" &e" + TimeUtilities.prettyDuration(joinDate, quitDate));
+                        }
+
+                        hm.send(pp.getPlayer());
                     }
+
+                    context.sendMessage(" &6&lNEWEST");
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -84,7 +102,19 @@ public class LoginHistoryCommand extends CommandBase<PotterPlusAPI> {
 
     @Override
     public List<String> tab(CommandContext context) {
-        // TODO Tab completion
-        return null;
+        Set<String> set = new HashSet<>();
+
+        if (context.hasPermission("potterplus.admin")) {
+            try {
+                set.addAll(getPlugin().getPlayerManager().getAllUsernames());
+            } catch (SQLException e) {
+                getPlugin().debug("Failed to complete tab for command /loginhistory");
+                e.printStackTrace();
+            }
+        }
+
+        set.addAll(PotterPlusServer.getOnlinePlayerNames());
+
+        return new ArrayList<>(set);
     }
 }
