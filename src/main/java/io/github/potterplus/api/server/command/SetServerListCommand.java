@@ -6,7 +6,6 @@ import io.github.potterplus.api.string.StringUtilities;
 import io.github.potterplus.api.server.PotterPlusAPI;
 import lombok.NonNull;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.permissions.Permission;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +13,6 @@ import java.util.List;
 import static io.github.potterplus.api.string.StringUtilities.equalsAny;
 
 public class SetServerListCommand extends CommandBase<PotterPlusAPI> {
-
-    public static final Permission PERMISSION_SET_SERVER_LIST = new Permission("potterplus.command.setserverlist");
 
     public SetServerListCommand(@NonNull PotterPlusAPI plugin) {
         super(plugin);
@@ -26,7 +23,7 @@ public class SetServerListCommand extends CommandBase<PotterPlusAPI> {
     }
 
     public void execute(CommandContext context) {
-        if (!context.hasPermission(PERMISSION_SET_SERVER_LIST)) {
+        if (!context.hasPermission("potterplus.command.setserverlist")) {
             context.sendMessage(" &4&lX &cYou are not allowed to do that.");
             return;
         }

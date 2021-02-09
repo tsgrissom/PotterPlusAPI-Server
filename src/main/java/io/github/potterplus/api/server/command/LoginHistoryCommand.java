@@ -9,22 +9,17 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.Permission;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import static io.github.potterplus.api.string.StringUtilities.color;
 
 public class LoginHistoryCommand extends CommandBase<PotterPlusAPI> {
-
-    public static final Permission PERMISSION_LOGIN_HISTORY = new Permission("potterplus.command.loginhistory");
 
     public LoginHistoryCommand(@NonNull PotterPlusAPI plugin) {
         super(plugin);
@@ -37,7 +32,7 @@ public class LoginHistoryCommand extends CommandBase<PotterPlusAPI> {
 
     @Override
     public void execute(CommandContext context) {
-        if (!context.hasPermission(PERMISSION_LOGIN_HISTORY)) {
+        if (!context.hasPermission("potterplus.command.loginhistory")) {
             context.sendMessage(" &4&lX &cYou are not allowed to do that.");
             return;
         }
@@ -72,7 +67,7 @@ public class LoginHistoryCommand extends CommandBase<PotterPlusAPI> {
                         String ipColored = color("&7Address&8: &e" + ip + "\n");
                         String uuidColored = color("&7UUID&8: &e" + uuid + "\n");
                         String resultColored = color("&7Result&8: &e" + result);
-                        String timeColored = color("&e" + new SimpleDateFormat(TimeUtilities.PATTERN).format(new Date(time)));
+                        String timeColored = color("&e" + TimeUtilities.prettyTime(time));
 
                         TextComponent msg = new TextComponent(color("&6> &7Login at &e" + timeColored));
 

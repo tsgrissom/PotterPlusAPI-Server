@@ -3,17 +3,14 @@ package io.github.potterplus.api.server.command;
 import io.github.potterplus.api.command.CommandBase;
 import io.github.potterplus.api.command.CommandContext;
 import io.github.potterplus.api.misc.BooleanFormatter;
-import io.github.potterplus.api.string.StringUtilities;
-import java.util.List;
-
 import io.github.potterplus.api.server.PotterPlusAPI;
+import io.github.potterplus.api.string.StringUtilities;
 import lombok.NonNull;
-import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.PluginDescriptionFile;
 
-public class PotterPlusAPICommand extends CommandBase<PotterPlusAPI> {
+import java.util.List;
 
-    public static final Permission PERMISSION_ADMIN = new Permission("potterplus.admin");
+public class PotterPlusAPICommand extends CommandBase<PotterPlusAPI> {
 
     public PotterPlusAPICommand(@NonNull PotterPlusAPI plugin) {
         super(plugin);
@@ -26,7 +23,7 @@ public class PotterPlusAPICommand extends CommandBase<PotterPlusAPI> {
 
     @Override
     public void execute(CommandContext context) {
-        if (!context.hasPermission(PERMISSION_ADMIN)) {
+        if (!context.hasPermission("potterplus.admin")) {
             context.sendMessage(" &4&lX &cYou are not allowed to do that!");
             return;
         }
@@ -63,7 +60,7 @@ public class PotterPlusAPICommand extends CommandBase<PotterPlusAPI> {
                 PluginDescriptionFile pdFile = getPlugin().getDescription();
                 String version = pdFile.getVersion();
 
-                context.sendMessage("&dPotterPlusAPI version &e" + version);
+                context.sendMessage("&dPPAPI&8> &7Running version &e" + version);
             }
         }
     }

@@ -5,17 +5,18 @@ import io.github.potterplus.api.misc.PluginLogger;
 import io.github.potterplus.api.server.command.LoginHistoryCommand;
 import io.github.potterplus.api.server.command.PotterPlusAPICommand;
 import io.github.potterplus.api.server.command.SetServerListCommand;
+import io.github.potterplus.api.server.command.WhoIsCommand;
 import io.github.potterplus.api.server.command.core.FeedCommand;
 import io.github.potterplus.api.server.command.core.HealCommand;
-import io.github.potterplus.api.server.player.PlayerManager;
-import io.github.potterplus.api.string.StringUtilities;
-import io.github.potterplus.api.server.command.WhoIsCommand;
 import io.github.potterplus.api.server.listener.JoinListener;
 import io.github.potterplus.api.server.listener.LoginListener;
 import io.github.potterplus.api.server.listener.QuitListener;
 import io.github.potterplus.api.server.listener.ServerListPingListener;
+import io.github.potterplus.api.server.player.PlayerManager;
 import io.github.potterplus.api.server.player.PotterPlayer;
 import io.github.potterplus.api.server.storage.PotterPlusDBController;
+import io.github.potterplus.api.string.StringUtilities;
+import io.github.potterplus.api.ui.UserInterface;
 import lombok.Getter;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
@@ -31,16 +32,12 @@ import org.bukkit.plugin.java.annotation.dependency.Dependency;
 import org.bukkit.plugin.java.annotation.dependency.DependsOn;
 import org.bukkit.plugin.java.annotation.permission.Permission;
 import org.bukkit.plugin.java.annotation.permission.Permissions;
-import org.bukkit.plugin.java.annotation.plugin.Plugin;
-import org.bukkit.plugin.java.annotation.plugin.ApiVersion;
-import org.bukkit.plugin.java.annotation.plugin.Description;
-import org.bukkit.plugin.java.annotation.plugin.LogPrefix;
-import org.bukkit.plugin.java.annotation.plugin.Website;
+import org.bukkit.plugin.java.annotation.plugin.*;
 import org.bukkit.plugin.java.annotation.plugin.author.Author;
 
 @Plugin(
         name = "PotterPlusAPI",
-        version = "1.0.5"
+        version = "1.0.6"
 )
 @ApiVersion(ApiVersion.Target.v1_13)
 @Description("API used by PotterPlus to power its many plugins.")
@@ -62,7 +59,6 @@ import org.bukkit.plugin.java.annotation.plugin.author.Author;
 })
 @Permissions({
         @Permission(name = "potterplus.admin"),
-        @Permission(name = "potterplus.command.whois"),
         @Permission(name = "potterplus.command.loginhistory"),
         @Permission(name = "potterplus.command.setserverlist"),
         @Permission(name = "potterplus.command.heal"),
@@ -158,6 +154,8 @@ public class PotterPlusAPI extends JavaPlugin {
         saveDefaultConfig();
 
         this.setupDependencies();
+
+        UserInterface.prepare(this);
 
         this.registerEvents();
         this.registerCommands();

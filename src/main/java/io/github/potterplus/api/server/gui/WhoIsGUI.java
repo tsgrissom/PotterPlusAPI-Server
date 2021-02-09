@@ -1,52 +1,60 @@
 package io.github.potterplus.api.server.gui;
 
-import io.github.potterplus.api.gui.GUI;
-import io.github.potterplus.api.gui.button.AutoGUIButton;
 import io.github.potterplus.api.item.Icon;
 import io.github.potterplus.api.misc.TimeUtilities;
-import io.github.potterplus.api.server.PotterPlusAPI;
 import io.github.potterplus.api.server.player.PotterPlayer;
 import io.github.potterplus.api.server.player.Role;
+import io.github.potterplus.api.ui.UserInterface;
+import io.github.potterplus.api.ui.button.AutoUIButton;
+import io.github.potterplus.api.ui.button.UIButton;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-public class WhoIsGUI extends GUI {
+public class WhoIsGUI extends UserInterface {
 
-    public WhoIsGUI(PotterPlusAPI api, PotterPlayer pp) {
-        super("&8Who is " + pp.getRole().getColorPrefix() + pp.getName() + "&8?", 18);
+    public WhoIsGUI(PotterPlayer target, PotterPlayer dispatcher) {
+        this(target, dispatcher, false);
+    }
+
+    public WhoIsGUI(PotterPlayer target, PotterPlayer dispatcher, boolean forceUserView) {
+        super("&8Who is &e" + target.getName() + "&8?", forceUserView || !dispatcher.isStaff() ? 18 : 36);
+
+        boolean staff = dispatcher.isStaff();
 
         List<String> lore = new ArrayList<>();
 
-        lore.add("&7House&8: &r" + pp.getHouse().getColoredName());
-        lore.add("&7Role&8: &r" + pp.getRole().getColoredName());
+        lore.add("&7House&8: &r" + target.getHouse().getColoredName());
+        lore.add("&7Role&8: &r" + target.getRole().getColoredName());
 
-        if (pp.isOnline()) {
-            Player p = pp.getPlayer();
+        if (target.isOnline()) {
+            Player p = target.getPlayer();
 
             lore.add("");
             lore.add("&7Display name&8: &r" + p.getDisplayName());
         }
 
         lore.add("");
-        lore.add("&7Playing since&8: &e" + new SimpleDateFormat(TimeUtilities.PATTERN)
-                .format(new Date(pp.getPlayingSince())));
+        lore.add("&7Playing since&8: &e" + TimeUtilities.prettyTime(target.getPlayingSince()));
+
+        if (staff) {
+            lore.add("");
+            lore.add("&7UUID&8: &e" + target.getUniqueStr());
+        }
 
         Icon skull = Icon
-                .skull(pp.getUniqueId())
-                .name("&7Who is &e" + pp.getName() + "&7?")
+                .skull(target.getUniqueId())
+                .name("&7Who is &e" + target.getName() + "&7?")
                 .lore(lore);
 
-        addButton(new AutoGUIButton(skull));
+        addButton(new AutoUIButton(skull));
 
         Icon block1 = null;
         Icon block2 = null;
 
-        switch (pp.getHouse()) {
+        switch (target.getHouse()) {
             case UNSORTED:
                 block1 = Icon.start(Material.GRAY_STAINED_GLASS).name("&7Student");
                 block2 = Icon.start(Material.WHITE_STAINED_GLASS).name("&fStudent");
@@ -69,8 +77,8 @@ public class WhoIsGUI extends GUI {
                 break;
         }
 
-        AutoGUIButton house1 = new AutoGUIButton(block1);
-        AutoGUIButton house2 = new AutoGUIButton(block2);
+        AutoUIButton house1 = new AutoUIButton(block1);
+        AutoUIButton house2 = new AutoUIButton(block2);
 
         addButton(house1);
         addButton(house2);
@@ -81,18 +89,49 @@ public class WhoIsGUI extends GUI {
         addButton(house1);
         addButton(house2);
 
-        Role r = pp.getRole();
+        Role r = target.getRole();
         Icon i = Icon.start(
-                pp.isStudent() ?
+                target.isStudent() ?
                         Material.IRON_BLOCK :
                         Material.PURPLE_WOOL
         );
 
         i.name("&7Role&8: " + r.getColoredName());
 
-        AutoGUIButton roleIndicator = new AutoGUIButton(i);
+        AutoUIButton roleIndicator = new AutoUIButton(i);
 
         setButton(9, roleIndicator);
         setButton(17, roleIndicator);
+
+        if (staff) {
+            UIButton loginHistory = new UIButton(
+                    Icon.start(Material.PAPER)
+                            .name("&3View login history")
+                            .lore("&7View this user's login history")
+            );
+
+            loginHistory.setListener((e -> {
+                e.setCancelled(true);
+                if (e.getWhoClicked() instanceof Player) {
+                    ((Player) e.getWhoClicked()).performCommand("loginhistory " + target.getName());
+                }
+            }));
+
+            UIButton viewAsUser = new UIButton(
+                    Icon.start(Material.BARRIER)
+                            .name("&3View as user")
+                            .lore("&7You are currently viewing this user as a staff member")
+            );
+
+            viewAsUser.setListener((e -> {
+                e.setCancelled(true);
+                new WhoIsGUI(target, dispatcher, true);
+            }));
+
+            setButton(34, loginHistory);
+            setButton(35, viewAsUser);
+        }
+
+        this.activate(dispatcher.getPlayer());
     }
 }

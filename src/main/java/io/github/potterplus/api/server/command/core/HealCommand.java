@@ -4,7 +4,6 @@ import io.github.potterplus.api.PotterPlusServer;
 import io.github.potterplus.api.command.CommandBase;
 import io.github.potterplus.api.command.CommandContext;
 import io.github.potterplus.api.server.PotterPlusAPI;
-import io.github.potterplus.api.wrapper.PPCommandSender;
 import lombok.NonNull;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;

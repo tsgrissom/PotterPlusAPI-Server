@@ -10,15 +10,11 @@ import lombok.NonNull;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.Permission;
-import org.bukkit.plugin.java.annotation.command.Command;
 
 import java.sql.SQLException;
 import java.util.*;
 
 public class WhoIsCommand extends CommandBase<PotterPlusAPI> {
-
-    public static final Permission PERMISSION_WHOIS = new Permission("potterplus.command.whois");
 
     public WhoIsCommand(@NonNull PotterPlusAPI api) {
         super(api);
@@ -41,7 +37,7 @@ public class WhoIsCommand extends CommandBase<PotterPlusAPI> {
             PotterPlayer player = PotterPlayer.of(arg1, getPlugin());
 
             if (player != null) {
-                new WhoIsGUI(getPlugin(), player).activate(p);
+                new WhoIsGUI(player, new PotterPlayer(p, getPlugin()));
             } else {
                 context.sendMessage(" &4&lX &cUnknown player '" + arg1 + "'");
             }
@@ -54,11 +50,6 @@ public class WhoIsCommand extends CommandBase<PotterPlusAPI> {
 
     @Override
     public void execute(CommandContext context) {
-        if (!context.hasPermission(PERMISSION_WHOIS)) {
-            context.sendMessage(" &4&lX &cYou are not allowed to do that.");
-            return;
-        }
-
         CommandSender sender = context.getSender();
 
         if (sender instanceof Player) {
