@@ -2,8 +2,8 @@ package io.github.potterplus.api.server.command;
 
 import io.github.potterplus.api.command.CommandBase;
 import io.github.potterplus.api.command.CommandContext;
-import io.github.potterplus.api.misc.BooleanFormat;
-import io.github.potterplus.api.misc.StringUtilities;
+import io.github.potterplus.api.misc.BooleanFormatter;
+import io.github.potterplus.api.string.StringUtilities;
 import java.util.List;
 
 import io.github.potterplus.api.server.PotterPlusAPI;
@@ -46,7 +46,7 @@ public class PotterPlusAPICommand extends CommandBase<PotterPlusAPI> {
 
                     if (context.getSender().hasPermission("potterplus.admin")) {
                         boolean debug = getPlugin().getConfig().getBoolean("debug");
-                        context.sendMessage("&dPPAPI&8> &7Debugging is " + BooleanFormat.ENABLED_DISABLED.format(debug));
+                        context.sendMessage("&dPPAPI&8> &7Debugging is " + BooleanFormatter.ENABLED_DISABLED.format(debug));
                     }
                 } catch (Exception e) {
                     context.sendMessage("&dPotterPlusAPI&8> &cFailed to reload! Check console for information.");
@@ -58,7 +58,7 @@ public class PotterPlusAPICommand extends CommandBase<PotterPlusAPI> {
                 getPlugin().getConfig().set("debug", debug);
                 getPlugin().saveConfig();
 
-                context.sendMessage("&dPPAPI&8> &7Debugging " + BooleanFormat.ENABLED_DISABLED.format(debug));
+                context.sendMessage("&dPPAPI&8> &7Debugging " + BooleanFormatter.ENABLED_DISABLED.format(debug));
             } else if (StringUtilities.equalsAny(arg1, "version", "v")) {
                 PluginDescriptionFile pdFile = getPlugin().getDescription();
                 String version = pdFile.getVersion();

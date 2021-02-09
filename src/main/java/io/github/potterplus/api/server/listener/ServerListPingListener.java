@@ -1,6 +1,6 @@
 package io.github.potterplus.api.server.listener;
 
-import io.github.potterplus.api.misc.StringUtilities;
+import io.github.potterplus.api.string.StringUtilities;
 import java.util.Collections;
 import java.util.List;
 

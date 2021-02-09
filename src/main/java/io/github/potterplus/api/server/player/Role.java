@@ -27,6 +27,10 @@ public enum Role {
         return s.charAt(0) + s.substring(1).toLowerCase();
     }
 
+    public String getColorPrefix() {
+        return primaryColor.toString() + "";
+    }
+
     public String getColoredName() {
         return getPrimaryColor() + getName();
     }

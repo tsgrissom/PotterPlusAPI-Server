@@ -2,8 +2,7 @@ package io.github.potterplus.api.server.command;
 
 import io.github.potterplus.api.command.CommandBase;
 import io.github.potterplus.api.command.CommandContext;
-import io.github.potterplus.api.misc.StringUtilities;
-import io.github.potterplus.api.misc.TimeConverter;
+import io.github.potterplus.api.misc.TimeUtilities;
 import io.github.potterplus.api.server.PotterPlusAPI;
 import lombok.NonNull;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -21,7 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static io.github.potterplus.api.misc.StringUtilities.color;
+import static io.github.potterplus.api.string.StringUtilities.color;
 
 public class LoginHistoryCommand extends CommandBase<PotterPlusAPI> {
 
@@ -73,7 +72,7 @@ public class LoginHistoryCommand extends CommandBase<PotterPlusAPI> {
                         String ipColored = color("&7Address&8: &e" + ip + "\n");
                         String uuidColored = color("&7UUID&8: &e" + uuid + "\n");
                         String resultColored = color("&7Result&8: &e" + result);
-                        String timeColored = color("&e" + new SimpleDateFormat(TimeConverter.PATTERN).format(new Date(time)));
+                        String timeColored = color("&e" + new SimpleDateFormat(TimeUtilities.PATTERN).format(new Date(time)));
 
                         TextComponent msg = new TextComponent(color("&6> &7Login at &e" + timeColored));
 

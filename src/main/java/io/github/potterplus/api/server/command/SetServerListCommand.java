@@ -2,7 +2,7 @@ package io.github.potterplus.api.server.command;
 
 import io.github.potterplus.api.command.CommandBase;
 import io.github.potterplus.api.command.CommandContext;
-import io.github.potterplus.api.misc.StringUtilities;
+import io.github.potterplus.api.string.StringUtilities;
 import io.github.potterplus.api.server.PotterPlusAPI;
 import lombok.NonNull;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -11,7 +11,7 @@ import org.bukkit.permissions.Permission;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.potterplus.api.misc.StringUtilities.equalsAny;
+import static io.github.potterplus.api.string.StringUtilities.equalsAny;
 
 public class SetServerListCommand extends CommandBase<PotterPlusAPI> {
 

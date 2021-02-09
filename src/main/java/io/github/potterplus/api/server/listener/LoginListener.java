@@ -2,6 +2,7 @@ package io.github.potterplus.api.server.listener;
 
 import io.github.potterplus.api.misc.PluginLogger;
 import io.github.potterplus.api.server.PotterPlusAPI;
+import io.github.potterplus.api.server.player.PotterPlayer;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.entity.Player;
@@ -11,7 +12,6 @@ import org.bukkit.event.player.PlayerLoginEvent;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @RequiredArgsConstructor
@@ -20,62 +20,45 @@ public class LoginListener implements Listener {
     @NonNull
     private final PotterPlusAPI api;
 
+    public Connection getConnection() {
+        return api.getDatabase().getConnection();
+    }
+
+    private void recordLogin(PlayerLoginEvent event) throws SQLException {
+        Player p = event.getPlayer();
+        PotterPlayer pp = new PotterPlayer(p, api);
+        String uuid = pp.getUniqueStr();
+        String name = pp.getName();
+        String fromIp = event.getAddress().getHostAddress();
+        String toIp = api.getServer().getIp();
+        long now = System.currentTimeMillis();
+
+        if (!pp.hasRecordedLoginForAddress(fromIp)) {
+            this.api.debug("Recording new login for player '" + name + "' at address " + fromIp);
+        }
+
+        PreparedStatement stmt = getConnection()
+                .prepareStatement("INSERT INTO pp_logins " +
+                "(to_ip, from_ip, uuid, join_time, result) " +
+                "VALUES (?, ?, ?, ?, ?);");
+
+        stmt.setString(1, toIp);
+        stmt.setString(2, fromIp);
+        stmt.setString(3, uuid);
+        stmt.setLong(4, now);
+        stmt.setString(5, event.getResult().name());
+
+        stmt.executeUpdate();
+    }
+
     @EventHandler
     public void onLogin(final PlayerLoginEvent event) {
-        Player p = event.getPlayer();
-        Connection connection = api.getDatabase().getConnection();
-
-        String uuid = p.getUniqueId().toString();
-        String name = p.getName();
-        String ip = event.getAddress().getHostAddress();
+        String name = event.getPlayer().getName();
 
         try {
-            PreparedStatement stmt = connection.prepareStatement("INSERT INTO pp_logins (ip, uuid, time, result) VALUES (?, ?, ?, ?);");
-
-            stmt.setString(1, ip);
-            stmt.setString(2, uuid);
-            stmt.setLong(3, System.currentTimeMillis());
-            stmt.setString(4, event.getResult().name());
-
-            stmt.executeUpdate();
-
-            this.api.debug("Recorded login for player '" + name + "' at address " + ip);
+            recordLogin(event);
         } catch (Throwable e) {
             PluginLogger.atWarn("Failed to update logins for PotterPlayer '" + name + "'");
-            e.printStackTrace();
-        }
-        try {
-            PreparedStatement stmt = connection.prepareStatement("SELECT id FROM pp_users WHERE uuid=?;");
-
-            stmt.setString(1, uuid);
-
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                this.api.debug("Found existing record of player '" + name + "'. Updating username.");
-
-                stmt = connection.prepareStatement("UPDATE pp_users SET username=? WHERE uuid=?;");
-
-                stmt.setString(1, name);
-                stmt.setString(2, uuid);
-                stmt.executeUpdate();
-
-                this.api.debug("Updated player record for '" + name + "'");
-            } else {
-                this.api.debug("Found no record of player '" + name + "'. Creating database entry...");
-
-                stmt = connection.prepareStatement("INSERT INTO pp_users (uuid, ip, username) VALUES (?, ?, ?);");
-
-                stmt.setString(1, uuid);
-                stmt.setString(2, ip);
-                stmt.setString(3, name);
-
-                stmt.executeUpdate();
-
-                this.api.debug("Created player record for player '" + name + "'");
-            }
-        } catch (SQLException e) {
-            PluginLogger.atWarn("Failed to update DB record for PotterPlayer '" + name + "'");
             e.printStackTrace();
         }
     }
