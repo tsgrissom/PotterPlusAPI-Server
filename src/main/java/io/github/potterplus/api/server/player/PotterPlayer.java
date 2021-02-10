@@ -2,7 +2,7 @@ package io.github.potterplus.api.server.player;
 
 import io.github.potterplus.api.misc.PluginLogger;
 import io.github.potterplus.api.server.PotterPlusAPI;
-import io.github.potterplus.api.server.storage.PotterPlusDBController;
+import io.github.potterplus.api.server.storage.db.PotterPlusDBController;
 import lombok.Getter;
 import lombok.NonNull;
 import net.luckperms.api.model.user.User;

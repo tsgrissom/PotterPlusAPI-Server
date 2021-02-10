@@ -4,7 +4,7 @@ import io.github.potterplus.api.PotterPlusServer;
 import io.github.potterplus.api.command.CommandBase;
 import io.github.potterplus.api.command.CommandContext;
 import io.github.potterplus.api.server.PotterPlusAPI;
-import io.github.potterplus.api.server.gui.WhoIsGUI;
+import io.github.potterplus.api.server.gui.WhoIsUI;
 import io.github.potterplus.api.server.player.PotterPlayer;
 import lombok.NonNull;
 import org.bukkit.command.CommandSender;
@@ -37,7 +37,7 @@ public class WhoIsCommand extends CommandBase<PotterPlusAPI> {
             PotterPlayer player = PotterPlayer.of(arg1, getPlugin());
 
             if (player != null) {
-                new WhoIsGUI(player, new PotterPlayer(p, getPlugin()));
+                new WhoIsUI(getPlugin(), player, new PotterPlayer(p, getPlugin()));
             } else {
                 context.sendMessage(" &4&lX &cUnknown player '" + arg1 + "'");
             }

@@ -54,7 +54,7 @@ public class FeedCommand extends CommandBase<PotterPlusAPI> {
                 Player p = (Player) cs;
 
                 feed(p);
-                p.sendMessage(color("&dServer&8> &7You fed yourself"));
+                p.sendMessage(color("&dServer&8> &7Your hunger was sated"));
             }
         } else {
             context.sendMessage(color("&dServer&8> &7Feeding &e" + args.length + " &7people&8...."));
@@ -66,7 +66,7 @@ public class FeedCommand extends CommandBase<PotterPlusAPI> {
                     Player t = target.get();
 
                     feed(t);
-                    t.sendMessage(color("&dServer&8> &7You were fed by &r" + cs.getName()));
+                    t.sendMessage(color("&dServer&8> &7Your hunger was sated by &r" + cs.getName()));
 
                     context.sendMessage(" &7- " + t.getDisplayName());
                 } else {

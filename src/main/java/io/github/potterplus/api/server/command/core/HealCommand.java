@@ -3,10 +3,9 @@ package io.github.potterplus.api.server.command.core;
 import io.github.potterplus.api.PotterPlusServer;
 import io.github.potterplus.api.command.CommandBase;
 import io.github.potterplus.api.command.CommandContext;
+import io.github.potterplus.api.player.PlayerUtils;
 import io.github.potterplus.api.server.PotterPlusAPI;
 import lombok.NonNull;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -31,16 +30,8 @@ public class HealCommand extends CommandBase<PotterPlusAPI> {
     }
 
     public void heal(Player p) {
-        AttributeInstance maxHealth = p.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-        double d;
-
-        if (maxHealth == null) {
-            d = 20;
-        } else {
-            d = maxHealth.getValue();
-        }
-
-        p.setHealth(d);
+        PlayerUtils utils = new PlayerUtils(p);
+        p.setHealth(utils.getMaxHealth());
         p.setFoodLevel(20);
     }
 

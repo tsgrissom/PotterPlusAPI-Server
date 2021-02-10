@@ -4,13 +4,12 @@ import com.elmakers.mine.bukkit.api.magic.MagicAPI;
 import io.github.potterplus.api.PotterPlugin;
 import io.github.potterplus.api.misc.PluginLogger;
 import io.github.potterplus.api.server.command.*;
-import io.github.potterplus.api.server.command.core.FeedCommand;
-import io.github.potterplus.api.server.command.core.GameModeCommand;
-import io.github.potterplus.api.server.command.core.HealCommand;
+import io.github.potterplus.api.server.command.core.*;
 import io.github.potterplus.api.server.listener.*;
 import io.github.potterplus.api.server.player.PlayerManager;
 import io.github.potterplus.api.server.player.PotterPlayer;
-import io.github.potterplus.api.server.storage.PotterPlusDBController;
+import io.github.potterplus.api.server.storage.db.PotterPlusDBController;
+import io.github.potterplus.api.server.storage.flatfile.DatabaseFile;
 import io.github.potterplus.api.ui.UserInterface;
 import lombok.Getter;
 import net.luckperms.api.LuckPerms;
@@ -47,26 +46,41 @@ import static io.github.potterplus.api.misc.PluginLogger.atSevere;
 @DependsOn({@Dependency("Magic"), @Dependency("ProtocolLib"), @Dependency("LuckPerms")})
 @LogPrefix("PPAPI")
 @Commands({
-        @Command(name = "loginhistory"),
-        @Command(
-                name = "potterplusapi",
+        @Command(name = "clearpotioneffects",
+                aliases = {"clearpots", "clearstatuses", "clearstatuseffects"}),
+        @Command(name = "feed",
+                aliases = {"sate"}),
+        @Command(name = "gamemode",
+                aliases = {"gm", "gm0", "gm1", "gm2", "gm3", "gms", "gmc", "gma", "gmsp", "gmsurvival", "gmcreative", "gmadventure", "gmspectator"}),
+        @Command(name = "heal"),
+        @Command(name = "kill"),
+        @Command(name = "potion",
+                aliases = {"pot", "applypot", "applypotion", "applypotioneffect", "applystatus", "applystatuseffect"}),
+        @Command(name = "loginhistory",
+                aliases = {"lh"}),
+        @Command(name = "me",
+                aliases = {"persona", "character", "whoami"}),
+        @Command(name = "potterplusapi",
                 aliases = {"ppapi"}),
         @Command(name = "setserverlist",
                 aliases = {"motd", "setmotd"}),
-        @Command(name = "whois"),
-        @Command(name = "heal"),
-        @Command(name = "gamemode",
-                aliases = {"gm", "gm0", "gm1", "gm2", "gm3", "gms", "gmc", "gma", "gmsp", "gmsurvival", "gmcreative", "gmadventure", "gmspectator"}),
-        @Command(name = "feed"),
-        @Command(name = "where")
+        @Command(name = "where",
+                aliases = {"whereami"}),
+        @Command(name = "whois",
+                aliases = {"who"})
 })
 @Permissions({
         @Permission(name = "potterplus.admin"),
+
+        @Permission(name = "potterplus.command.clearpotioneffects"),
+        @Permission(name = "potterplus.command.feed"),
+        @Permission(name = "potterplus.command.gamemode"),
+        @Permission(name = "potterplus.command.heal"),
+        @Permission(name = "potterplus.command.kill"),
+        @Permission(name = "potterplus.command.potion"),
+
         @Permission(name = "potterplus.command.loginhistory"),
         @Permission(name = "potterplus.command.setserverlist"),
-        @Permission(name = "potterplus.command.heal"),
-        @Permission(name = "potterplus.command.feed"),
-        @Permission(name = "potterplus.command.gamemode")
 })
 public class PotterPlusAPI extends PotterPlugin {
 
@@ -78,6 +92,9 @@ public class PotterPlusAPI extends PotterPlugin {
 
     @Getter
     private PlayerManager playerManager;
+
+    @Getter
+    private DatabaseFile databaseFile;
 
     @Getter
     private MagicAPI magicAPI;
@@ -141,13 +158,16 @@ public class PotterPlusAPI extends PotterPlugin {
     }
 
     private void registerCommands() {
-        new PotterPlusAPICommand(this);
-
+        new ClearPotionEffectsCommand(this);
         new FeedCommand(this);
         new GameModeCommand(this);
         new HealCommand(this);
+        new KillCommand(this);
+        new PotionCommand(this);
 
         new LoginHistoryCommand(this);
+        new MeCommand(this);
+        new PotterPlusAPICommand(this);
         new SetServerListCommand(this);
         new WhereCommand(this);
         new WhoIsCommand(this);
@@ -194,6 +214,8 @@ public class PotterPlusAPI extends PotterPlugin {
 
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
+
+        this.databaseFile = new DatabaseFile(this);
 
         this.setupDependencies();
 

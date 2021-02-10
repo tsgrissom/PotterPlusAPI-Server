@@ -1,7 +1,10 @@
 package io.github.potterplus.api.server.gui;
 
+import com.elmakers.mine.bukkit.api.magic.MagicAPI;
 import io.github.potterplus.api.item.Icon;
+import io.github.potterplus.api.misc.BooleanFormatter;
 import io.github.potterplus.api.misc.TimeUtilities;
+import io.github.potterplus.api.server.PotterPlusAPI;
 import io.github.potterplus.api.server.player.PotterPlayer;
 import io.github.potterplus.api.server.player.Role;
 import io.github.potterplus.api.ui.UserInterface;
@@ -9,18 +12,21 @@ import io.github.potterplus.api.ui.button.AutoUIButton;
 import io.github.potterplus.api.ui.button.UIButton;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class WhoIsGUI extends UserInterface {
+import static io.github.potterplus.api.string.StringUtilities.getPrettyEnumName;
 
-    public WhoIsGUI(PotterPlayer target, PotterPlayer dispatcher) {
-        this(target, dispatcher, false);
+public class WhoIsUI extends UserInterface {
+
+    public WhoIsUI(PotterPlusAPI plugin, PotterPlayer target, PotterPlayer dispatcher) {
+        this(plugin, target, dispatcher, false);
     }
 
-    public WhoIsGUI(PotterPlayer target, PotterPlayer dispatcher, boolean forceUserView) {
-        super("&8Who is &e" + target.getName() + "&8?", 18);
+    public WhoIsUI(PotterPlusAPI plugin, PotterPlayer target, PotterPlayer dispatcher, boolean forceUserView) {
+        super("&8Who is &7" + target.getName() + "&8?", 18);
 
         boolean staff = dispatcher.isStaff();
 
@@ -46,6 +52,32 @@ public class WhoIsGUI extends UserInterface {
         if (staff) {
             lore.add("");
             lore.add("&7UUID&8: &e" + target.getUniqueStr());
+            lore.add("&7IP Address&8: &e" + target.getIpAddress());
+
+            if (target.isOnline()) {
+                Player p = target.getPlayer();
+
+                lore.add("&7Game Mode&8: &b" + getPrettyEnumName(p.getGameMode().name()));
+                lore.add("&7World&8: &b" + p.getWorld().getName());
+                lore.add("&7Regions&8:");
+                lore.add("&7Location&8:");
+                lore.add(" &ax &b" + ((int) p.getLocation().getX()));
+                lore.add(" &ay &b" + ((int) p.getLocation().getY()));
+                lore.add(" &az &b" + ((int) p.getLocation().getZ()));
+                lore.add("&7Health&8: &b" + p.getHealth());
+                lore.add("&7Food level&8: &b" + p.getFoodLevel());
+                lore.add("&7Potion effects&8: " + (p.getActivePotionEffects().isEmpty() ? "&cNone" : ""));
+
+                for (PotionEffect pe : p.getActivePotionEffects()) {
+                    lore.add(" &8> &b" + getPrettyEnumName(pe.getType().getName()) + "x" + (pe.getAmplifier() + 1) + " for " + pe.getDuration());
+                }
+
+                MagicAPI mapi = plugin.getMagicAPI();
+                boolean holdingWand = mapi.isWand(p.getInventory().getItemInMainHand());
+                String holding = BooleanFormatter.YES_NO.format(holdingWand, true, true);
+
+                lore.add("&7Holding wand? " + holding);
+            }
         }
 
         Icon skull = Icon
@@ -130,7 +162,7 @@ public class WhoIsGUI extends UserInterface {
 
             viewAsUser.setListener((e -> {
                 e.setCancelled(true);
-                new WhoIsGUI(target, dispatcher, true);
+                new WhoIsUI(plugin, target, dispatcher, true);
             }));
 
             setButton(34, loginHistory);

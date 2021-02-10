@@ -1,0 +1,5 @@
+# The db credentials to use
+host: ""
+db: ""
+user: ""
+pass: ""

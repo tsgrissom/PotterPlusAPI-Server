@@ -1,4 +1,4 @@
-package io.github.potterplus.api.server.storage;
+package io.github.potterplus.api.server.storage.db;
 
 import io.github.potterplus.api.storage.database.DatabaseController;
 import lombok.Getter;
@@ -11,7 +11,8 @@ public class PotterPlusDBController extends DatabaseController {
     private final PotterPlusAPI api;
 
     public PotterPlusDBController(PotterPlusAPI api) {
-        super(api.getConfig().getString("database.host"), api.getConfig().getString("database.db"), api.getConfig().getString("database.user"), api.getConfig().getString("database.pass"));
+        super(api.getDatabaseFile().getHost(), api.getDatabaseFile().getDatabase(), api.getDatabaseFile().getUsername(), api.getDatabaseFile().getPassword());
+
         this.api = api;
     }
 }

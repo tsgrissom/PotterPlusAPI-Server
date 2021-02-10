@@ -3,13 +3,6 @@ debug: false
 # What the server's name is. Will show up in /where.
 server_name: "&dPotterPlus Remote"
 
-# The db credentials to use
-database:
-  host: ""
-  db: ""
-  user: ""
-  pass: ""
-
 features:
   # Whether or not to listen for server list ping and set the MOTD
   motd: true

@@ -3,6 +3,7 @@ package io.github.potterplus.api.server.command.core;
 import io.github.potterplus.api.command.CommandBase;
 import io.github.potterplus.api.command.CommandContext;
 import io.github.potterplus.api.server.PotterPlusAPI;
+import io.github.potterplus.api.server.gui.GameModeSelectorUI;
 import io.github.potterplus.api.string.StringUtilities;
 import lombok.NonNull;
 import org.bukkit.GameMode;
@@ -66,7 +67,11 @@ public class GameModeCommand extends CommandBase<PotterPlusAPI> {
 
         if (equalsAny(label, "gamemode", "gm")) {
             if (args.length == 0) {
-
+                if (context.isPlayer()) {
+                    new GameModeSelectorUI().activate(context.getPlayer());
+                } else if (context.isConsole()) {
+                    context.sendMessage(getUsage());
+                }
             } else {
                 if (context.isConsole()) {
                     context.sendMessage(getUsage());
@@ -107,9 +112,9 @@ public class GameModeCommand extends CommandBase<PotterPlusAPI> {
                             replace.put("%tn%", t.getName());
 
                             t.setGameMode(gm);
-                            t.sendMessage("&dServer&8> &7Your gamemode was set to &b%gm% &7by &e%pn%");
+                            t.sendMessage(color(replace("&dServer&8> &7Your gamemode was set to &b%gm% &7by &e%pn%", replace)));
 
-                            context.sendMessage("&dServer&8> &7You set &e%tn%'s &7gamemode to &b%gm%");
+                            context.sendMessage(replace("&dServer&8> &7You set &e%tn%'s &7gamemode to &b%gm%", replace));
                         } else {
                             context.sendMessage(" &4&lX &cPlayer '" + args[i] + "' is offline");
                         }
