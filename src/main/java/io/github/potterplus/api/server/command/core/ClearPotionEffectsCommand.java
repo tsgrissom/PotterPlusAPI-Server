@@ -6,8 +6,10 @@ import io.github.potterplus.api.command.CommandContext;
 import io.github.potterplus.api.server.PotterPlusAPI;
 import lombok.NonNull;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +32,22 @@ public class ClearPotionEffectsCommand extends CommandBase<PotterPlusAPI> {
     }
 
     private void clearPotionEffects(CommandContext context, Player p) {
+        Collection<PotionEffect> pots = p.getActivePotionEffects();
+
+        if (pots.isEmpty()) {
+            String perspective;
+
+            if (p.equals(context.getSender())) {
+                perspective = "&eYou &7have";
+            } else {
+                perspective = "&7Player &e" + p.getName() + " &7has";
+            }
+
+            context.sendMessage("&dServer&8> " + perspective + " no active potion effects.");
+
+            return;
+        }
+
         p.getActivePotionEffects().forEach(potionEffect -> {
             PotionEffectType pt = potionEffect.getType();
             context.sendMessage("&dServer&8> &7Removing &b" + getPrettyEnumName(pt.getName()) + " &7from &e" + p.getName());
