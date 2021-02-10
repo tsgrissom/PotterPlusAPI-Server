@@ -1,3 +1,9 @@
+# Whether or not to send debug messages. Toggle with /ppapi debug.
+debug: false
+# What the server's name is. Will show up in /where.
+server_name: "&dPotterPlus Remote"
+
+# The db credentials to use
 database:
   host: ""
   db: ""
@@ -5,21 +11,19 @@ database:
   pass: ""
 
 features:
-  tab: true
+  # Whether or not to listen for server list ping and set the MOTD
   motd: true
+  # Whether or not to force the user to /getrp on join
+  auto_rp: true
+  # Whether or not to record the user's login to the database
+  db_logins: true
+  # Whether or not to open the character menu on sneak right click with player wand
+  sneak_right_click_menu: true
 
+# The server list ping MOTD
 motd: []
-debug: false
 
-messages:
-  no_perm: " &4&lX &cYou are not allowed to do that."
-  no_target: " &4&lX &cCould not find player '$tn'"
-  command:
-    heal:
-      healed_self: "&dServer&8> &7You healed yourself"
-      healed_target: "&dServer&8> &7You healed &r$td"
-      healed_other: "&dServer&8> &7You were healed by &r$pd"
-    feed:
-      fed_self: "&dServer&8> &7You fed yourself"
-      fed_target: "&dServer&8> &7You fed &r$td"
-      fed_other: "&dServer&8> &7You were fed by &r$pd"
+# What spell to cast on shift right click with the default wand
+shift_right_click_cast: "menu_character"
+# The default wand
+default_wand: "playerwand"

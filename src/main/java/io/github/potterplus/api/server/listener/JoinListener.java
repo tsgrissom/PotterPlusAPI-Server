@@ -65,7 +65,13 @@ public class JoinListener implements Listener {
 
     @EventHandler
     public void onJoin(final PlayerJoinEvent event) {
-        String name = event.getPlayer().getName();
+        Player p = event.getPlayer();
+
+        if (api.getConfig().getBoolean("features.auto_rp", true)) {
+            p.performCommand("getrp");
+        }
+
+        String name = p.getName();
 
         try {
             updateDB(event);

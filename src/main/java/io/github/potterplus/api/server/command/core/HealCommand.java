@@ -41,6 +41,7 @@ public class HealCommand extends CommandBase<PotterPlusAPI> {
         }
 
         p.setHealth(d);
+        p.setFoodLevel(20);
     }
 
     @Override

@@ -1,31 +1,25 @@
 package io.github.potterplus.api.server;
 
 import com.elmakers.mine.bukkit.api.magic.MagicAPI;
+import io.github.potterplus.api.PotterPlugin;
 import io.github.potterplus.api.misc.PluginLogger;
-import io.github.potterplus.api.server.command.LoginHistoryCommand;
-import io.github.potterplus.api.server.command.PotterPlusAPICommand;
-import io.github.potterplus.api.server.command.SetServerListCommand;
-import io.github.potterplus.api.server.command.WhoIsCommand;
+import io.github.potterplus.api.server.command.*;
 import io.github.potterplus.api.server.command.core.FeedCommand;
+import io.github.potterplus.api.server.command.core.GameModeCommand;
 import io.github.potterplus.api.server.command.core.HealCommand;
-import io.github.potterplus.api.server.listener.JoinListener;
-import io.github.potterplus.api.server.listener.LoginListener;
-import io.github.potterplus.api.server.listener.QuitListener;
-import io.github.potterplus.api.server.listener.ServerListPingListener;
+import io.github.potterplus.api.server.listener.*;
 import io.github.potterplus.api.server.player.PlayerManager;
 import io.github.potterplus.api.server.player.PotterPlayer;
 import io.github.potterplus.api.server.storage.PotterPlusDBController;
-import io.github.potterplus.api.string.StringUtilities;
 import io.github.potterplus.api.ui.UserInterface;
 import lombok.Getter;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.annotation.command.Command;
 import org.bukkit.plugin.java.annotation.command.Commands;
 import org.bukkit.plugin.java.annotation.dependency.Dependency;
@@ -35,14 +29,16 @@ import org.bukkit.plugin.java.annotation.permission.Permissions;
 import org.bukkit.plugin.java.annotation.plugin.*;
 import org.bukkit.plugin.java.annotation.plugin.author.Author;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import static io.github.potterplus.api.misc.PluginLogger.atInfo;
 import static io.github.potterplus.api.misc.PluginLogger.atSevere;
 
 @Plugin(
         name = "PotterPlusAPI",
-        version = "1.0.6"
+        version = "1.0.7"
 )
 @ApiVersion(ApiVersion.Target.v1_13)
 @Description("API used by PotterPlus to power its many plugins.")
@@ -58,18 +54,21 @@ import static io.github.potterplus.api.misc.PluginLogger.atSevere;
         @Command(name = "setserverlist",
                 aliases = {"motd", "setmotd"}),
         @Command(name = "whois"),
-
         @Command(name = "heal"),
-        @Command(name = "feed")
+        @Command(name = "gamemode",
+                aliases = {"gm", "gm0", "gm1", "gm2", "gm3", "gms", "gmc", "gma", "gmsp", "gmsurvival", "gmcreative", "gmadventure", "gmspectator"}),
+        @Command(name = "feed"),
+        @Command(name = "where")
 })
 @Permissions({
         @Permission(name = "potterplus.admin"),
         @Permission(name = "potterplus.command.loginhistory"),
         @Permission(name = "potterplus.command.setserverlist"),
         @Permission(name = "potterplus.command.heal"),
-        @Permission(name = "potterplus.command.feed")
+        @Permission(name = "potterplus.command.feed"),
+        @Permission(name = "potterplus.command.gamemode")
 })
-public class PotterPlusAPI extends JavaPlugin {
+public class PotterPlusAPI extends PotterPlugin {
 
     @Getter
     private PotterPlusAPI plugin;
@@ -86,25 +85,12 @@ public class PotterPlusAPI extends JavaPlugin {
     @Getter
     private LuckPerms luckPerms;
 
-    public static String getPrefix() {
+    public String getLogPrefix() {
         return "[PPAPI]";
     }
 
-    public static String getColoredPrefix() {
-        return StringUtilities.color(getPrefix());
-    }
-
-    public void debug(String str) {
-        if (getConfig().getBoolean("debug")) {
-            PluginLogger.atInfo(getPrefix() + " DEBUG - " + str);
-        }
-
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (p.hasPermission("potterplus.admin")) {
-                p.sendMessage(StringUtilities.color("&8| &dYou are receiving this notification from &3potterplus.admin"));
-                p.sendMessage(StringUtilities.color("&8| " + str));
-            }
-        }
+    public boolean isFeatureEnabled(String feature) {
+        return getConfig().getBoolean("features." + feature, true);
     }
 
     private void setupDependencies() {
@@ -130,21 +116,41 @@ public class PotterPlusAPI extends JavaPlugin {
 
     private void registerEvents() {
         PluginManager pm = Bukkit.getPluginManager();
+        FileConfiguration c = getConfig();
 
-        pm.registerEvents(new LoginListener(this), this);
+        if (isFeatureEnabled("motd")) {
+            pm.registerEvents(new ServerListPingListener(this), this);
+        }
+
+        if (isFeatureEnabled("db_logins")) {
+            pm.registerEvents(new LoginListener(this), this);
+        }
+
         pm.registerEvents(new JoinListener(this), this);
-        pm.registerEvents(new QuitListener(this), this);
-        pm.registerEvents(new ServerListPingListener(this), this);
+
+        if (isFeatureEnabled("db_logins")) {
+            pm.registerEvents(new QuitListener(this), this);
+        }
+
+        if (isFeatureEnabled("shift_right_click_menu")) {
+            String shiftRightClickCast = c.getString("shift_right_click_cast", "menu_character");
+            String defaultWand = c.getString("default_wand", "playerwand");
+
+            pm.registerEvents(new InteractListener(this, shiftRightClickCast, defaultWand), this);
+        }
     }
 
     private void registerCommands() {
         new PotterPlusAPICommand(this);
-        new WhoIsCommand(this);
+
+        new FeedCommand(this);
+        new GameModeCommand(this);
+        new HealCommand(this);
+
         new LoginHistoryCommand(this);
         new SetServerListCommand(this);
-
-        new HealCommand(this);
-        new FeedCommand(this);
+        new WhereCommand(this);
+        new WhoIsCommand(this);
     }
 
     public PotterPlayer getPotterPlayer(OfflinePlayer player) {
@@ -152,18 +158,32 @@ public class PotterPlusAPI extends JavaPlugin {
     }
 
     private void closeSessions() {
-        debug("Updating and locking any remaining sessions");
+        Connection c = getDatabase().getConnection();
 
         try {
-            PreparedStatement updateQuitTimes = getDatabase().getConnection()
-                    .prepareStatement("UPDATE pp_logins SET quit_time=? WHERE locked=false;");
-            updateQuitTimes.setLong(1, System.currentTimeMillis());
-            PreparedStatement lock = getDatabase().getConnection()
-                    .prepareStatement("UPDATE pp_logins SET locked=true WHERE locked=false;");
-            updateQuitTimes.executeUpdate();
-            lock.executeUpdate();
+            debug("Checking for loose sessions.");
+            PreparedStatement checkForSessions = c
+                    .prepareStatement("SELECT id FROM pp_logins WHERE locked=false OR quit_time=0");
+
+            if (checkForSessions.executeQuery().next()) {
+                debug("Found remaining sessions. Updating and locking...");
+
+                try {
+                    PreparedStatement updateQuitTimes = getDatabase().getConnection()
+                            .prepareStatement("UPDATE pp_logins SET quit_time=? WHERE locked=false;");
+                    updateQuitTimes.setLong(1, System.currentTimeMillis());
+                    PreparedStatement lock = getDatabase().getConnection()
+                            .prepareStatement("UPDATE pp_logins SET locked=true WHERE locked=false;");
+                    updateQuitTimes.executeUpdate();
+                    lock.executeUpdate();
+                    atInfo("Locked remaining PotterPlayer sessions.");
+                } catch (SQLException e) {
+                    atSevere("Failed to update and lock remaining sessions!");
+                    e.printStackTrace();
+                }
+            }
         } catch (SQLException e) {
-            atSevere("Failed to update and lock remaining sessions!");
+            atSevere("Failed to check for loose sessions.");
             e.printStackTrace();
         }
     }
