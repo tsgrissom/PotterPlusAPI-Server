@@ -1,5 +1,7 @@
 # PotterPlusAPI-Server
 
+[![Build Status](https://travis-ci.com/PotterPlus/PotterPlusAPI-Server.svg?token=TSz94qoPczfF4z3iJvmq&branch=main)](https://travis-ci.com/PotterPlus/PotterPlusAPI-Server)
+
 This is the plugin side of [PotterPlusAPI](https://github.com/PotterPlus/PotterPlusAPI) which powers all the custom plugins on the PotterPlus among other things:
 
 * WIP Re-writing Essentials commands we need, so that we can drop EssentialsX
