@@ -4,7 +4,7 @@ import com.elmakers.mine.bukkit.api.magic.MagicAPI;
 import io.github.potterplus.api.PotterPlugin;
 import io.github.potterplus.api.misc.PluginLogger;
 import io.github.potterplus.api.server.command.*;
-import io.github.potterplus.api.server.command.core.*;
+import io.github.potterplus.api.server.command.essential.*;
 import io.github.potterplus.api.server.listener.*;
 import io.github.potterplus.api.server.player.PlayerManager;
 import io.github.potterplus.api.server.player.PotterPlayer;

@@ -1,4 +1,4 @@
-package io.github.potterplus.api.server.command.core;
+package io.github.potterplus.api.server.command.essential;
 
 import io.github.potterplus.api.PotterPlusServer;
 import io.github.potterplus.api.command.CommandBase;
